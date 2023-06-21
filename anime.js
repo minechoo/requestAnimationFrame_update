@@ -30,4 +30,15 @@ function anime(selector, option) {
 		let result = currentValue + (option.value - currentValue) * progress;
 		selector.style[option.prop] = result + 'px';
 	}
+	function minus(time) {
+		let timelast = time - startTime;
+		let progress = timelast / option.duration;
+
+		progress < 0 && (progress = 0);
+		progress > 1 && (progress = 1);
+		progress < 1 ? requestAnimationFrame(minus) : option.callback && option.callback();
+
+		let result = currentValue - (currentValue - option.value) * progress;
+		selector.style[option.prop] = result + 'px';
+	}
 }
