@@ -3,15 +3,15 @@ const box = document.querySelector('#box');
 
 btn.addEventListener('click', () => {
 	anime(box, {
-		prop: 'top',
-		value: '50%',
+		prop: 'opacity',
+		value: 1,
 		duration: 500,
 	});
 });
 
 function anime(selector, option) {
 	const startTime = performance.now();
-	let currentValue = parseInt(getComputedStyle(selector)[option.prop]);
+	let currentValue = parseFloat(getComputedStyle(selector)[option.prop]);
 
 	//만약 value속성으로 받은 값이 문자열이면 퍼센트연산처리 해야되므로 정수가 아닌 실수로 값을 변환
 	const isString = typeof option.value;
@@ -50,6 +50,8 @@ function anime(selector, option) {
 
 		//속성값이 퍼센트이면 적용도 퍼센트 처리 그렇지 않으면 그냥 px처리
 		if (isString === 'string') selector.style[option.prop] = result + '%';
+		//속성명이 opacity이면 실수값을 그대로 스타일에 적용
+		else if (option.prop === 'opacity') selector.style[option.prop] = result;
 		else selector.style[option.prop] = result + 'px';
 	}
 }
