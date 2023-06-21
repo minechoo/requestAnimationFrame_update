@@ -10,8 +10,8 @@
 //1초동안 500px이동
 const btn = document.querySelector('button');
 const box = document.querySelector('#box');
-const speed = 1000;
-const targetValue = 500;
+const speed = 800;
+const targetValue = 1200;
 let startTime = 0;
 let count = 0;
 
@@ -25,7 +25,7 @@ function move(time) {
 	let timelast = time - startTime;
 
 	//매 반복횟수마다 현재 걸리는 누적시간값을 전체시간으로 나누면 0~1사이의 실수로 반환 가능
-	//progress : 설정한 시간되비 현재 반복되는 모션 진행상황을 0~1사이의 소수점으로 나타내주는 진행률 (x100 -백분율)
+	//progress : 설정한 시간대비 현재 반복되는 모션 진행상황을 0~1사이의 소수점으로 나타내주는 진행률 (x100 -백분율)
 	let progress = timelast / speed;
 	console.log('누적시간', timelast);
 	console.log('진행률', progress);
@@ -34,4 +34,5 @@ function move(time) {
 	if (progress < 1) {
 		requestAnimationFrame(move);
 	}
+	box.style.marginLeft = targetValue * progress + 'px';
 }
