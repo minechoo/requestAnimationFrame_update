@@ -84,20 +84,22 @@ class Anime {
 			this.option.value = parseFloat(this.option.value);
 		}
 
-		//run 메서드 안쪽의 this객체를 읽지 못하는 오류 발생
-		//미션 - 해당 코드에서 어떤 문제점이 있는지를 찾고 해결
-		//run메서드는 화살표 함수 형태가 아니므로 상위스코프에 있는 인스턴스 this객체를 참조해서 가져오지 못함
-		//bind(this)를 이용해서 직접적으로 this객체 바인딩
-		this.option.value !== this.currentValue && requestAnimationFrame(this.run.bind(this));
+		//프로토타입에 등록되어 있는 run메서드 안쪽에서 this객체를 못 읽는 이유
+		//화살표함수 안쪽에 this객체가 있어야지 상위 코드블록의 this객체값을 참조해서 가져옴
+		//특정 메서드를 화살표 함수로 wrapping처리
+		//주의할점 - requestAnimationFrame은 직계 콜백함수에만 파라미터를 전달하기 때문에
+		//중간에 wrapping함수로 감싸주면 파라미터값을 wrapping함수에 전달되므로 해당 값을 다시 안쪽에 재 전달해줘야함
+		this.option.value !== this.currentValue && requestAnimationFrame((time) => this.run(time));
 	}
 	run(time) {
+		console.log(this);
 		let timelast = time - this.startTime;
 		let progress = timelast / this.option.duration;
 
 		progress < 0 && (progress = 0);
 		progress > 1 && (progress = 1);
-		//bind(this)를 이용해서 직접적으로 this객체 바인딩
-		progress < 1 ? requestAnimationFrame(this.run.bind(this)) : this.option.callback && this.option.callback();
+
+		progress < 1 ? requestAnimationFrame((time) => this.run(time)) : this.option.callback && this.option.callback();
 
 		let result = this.currentValue + (this.option.value - this.currentValue) * progress;
 
