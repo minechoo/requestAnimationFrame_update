@@ -84,7 +84,11 @@ class Anime {
 			this.option.value = parseFloat(this.option.value);
 		}
 
-		this.option.value !== this.currentValue && requestAnimationFrame(this.run);
+		//run 메서드 안쪽의 this객체를 읽지 못하는 오류 발생
+		//미션 - 해당 코드에서 어떤 문제점이 있는지를 찾고 해결
+		//run메서드는 화살표 함수 형태가 아니므로 상위스코프에 있는 인스턴스 this객체를 참조해서 가져오지 못함
+		//bind(this)를 이용해서 직접적으로 this객체 바인딩
+		this.option.value !== this.currentValue && requestAnimationFrame(this.run.bind(this));
 	}
 	run(time) {
 		let timelast = time - this.startTime;
@@ -92,7 +96,8 @@ class Anime {
 
 		progress < 0 && (progress = 0);
 		progress > 1 && (progress = 1);
-		progress < 1 ? requestAnimationFrame(this.run) : this.option.callback && this.option.callback();
+		//bind(this)를 이용해서 직접적으로 this객체 바인딩
+		progress < 1 ? requestAnimationFrame(this.run.bind(this)) : this.option.callback && this.option.callback();
 
 		let result = this.currentValue + (this.option.value - this.currentValue) * progress;
 
