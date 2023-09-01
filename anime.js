@@ -75,6 +75,13 @@ class Anime {
 		console.log(key);
 		let currentValue = null;
 		const isString = typeof value;
+		//일반적인 속성명일때 currentValue값 처리
+		currentValue = parseFloat(getComputedStyle(this.selector)[key]);
+		//속성명이 scroll일때 currentValue값 처리
+		key === 'scroll'
+			? (currentValue = selector.scrollY)
+			: (currentValue = parseFloat(getComputedStyle(this.selector)[key])); //scroll은 윈도우 객체라 컴퓨티드스타일 못가져옴
+
 		if (isString === 'string') {
 			const parentW = parseInt(getComputedStyle(this.selector.parentElement).width);
 			const parentH = parseInt(getComputedStyle(this.selector.parentElement).height);
@@ -98,42 +105,26 @@ class Anime {
 			for (let cond of y) key === cond && (currentValue = (currentValue / parentH) * 100);
 
 			value = parseFloat(value);
-			console.log('curVal', currentValue, 'tarVal', value);
 		}
-		// key === 'scroll'
-		// 	? (this.currentValue = this.selector.scrollY)
-		// 	: (this.currentValue = parseFloat(getComputedStyle(this.selector)[this.option.prop])); //scroll은 윈도우 객체라 컴퓨티드스타일 못가져옴
+		console.log('curVal', currentValue, 'tarVal', value);
+		value !== currentValue && requestAnimationFrame((time) => this.run(time, key, currentValue, value));
 	}
 
-	/*
-		
+	run(time, key, currentValue, value) {
+		console.log('time', time, 'key', key, 'currentValue', currentValue, 'value', value);
+		// 	let timelast = time - this.startTime;
+		// 	let progress = timelast / this.option.duration;
 
-		this.isString = typeof this.option.value;
-		
-		}
-*/
-	//프로토타입에 등록되어 있는 run메서드 안쪽에서 this객체를 못 읽는 이유
-	//화살표함수 안쪽에 this객체가 있어야지 상위 코드블록의 this객체값을 참조해서 가져옴
-	//특정 메서드를 화살표 함수로 wrapping처리
-	//주의할점 - requestAnimationFrame은 직계 콜백함수에만 파라미터를 전달하기 때문에
-	//중간에 wrapping함수로 감싸주면 파라미터값을 wrapping함수에 전달되므로 해당 값을 다시 안쪽에 재 전달해줘야함
-	//this.option.value !== this.currentValue && requestAnimationFrame((time) => this.run(time));
+		// 	progress < 0 && (progress = 0);
+		// 	progress > 1 && (progress = 1);
+
+		// 	progress < 1 ? requestAnimationFrame((time) => this.run(time)) : this.option.callback && this.option.callback();
+
+		// 	let result = this.currentValue + (this.option.value - this.currentValue) * progress;
+
+		// 	if (this.isString === 'string') this.selector.style[this.option.prop] = result + '%';
+		// 	else if (this.option.prop === 'opacity') this.selector.style[this.option.prop] = result;
+		// 	else if (this.option.prop === 'scroll') this.selector.scroll(0, result);
+		// 	else this.selector.style[this.option.prop] = result + 'px';
+	}
 }
-
-// run(time) {
-// 	console.log(this);
-// 	let timelast = time - this.startTime;
-// 	let progress = timelast / this.option.duration;
-
-// 	progress < 0 && (progress = 0);
-// 	progress > 1 && (progress = 1);
-
-// 	progress < 1 ? requestAnimationFrame((time) => this.run(time)) : this.option.callback && this.option.callback();
-
-// 	let result = this.currentValue + (this.option.value - this.currentValue) * progress;
-
-// 	if (this.isString === 'string') this.selector.style[this.option.prop] = result + '%';
-// 	else if (this.option.prop === 'opacity') this.selector.style[this.option.prop] = result;
-// 	else if (this.option.prop === 'scroll') this.selector.scroll(0, result);
-// 	else this.selector.style[this.option.prop] = result + 'px';
-// }
