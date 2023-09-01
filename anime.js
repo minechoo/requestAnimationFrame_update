@@ -45,23 +45,23 @@ class Anime {
 	}
 
 	//공통으로 실행할 진행률 반환하는 메서드
-	getProgress(time) {
+	getProgress(time, currentValue, value) {
 		let timelast = time - this.startTime;
 		let progress = timelast / this.duration;
 		progress < 0 && (progress = 0);
 		progress > 1 && (progress = 1);
-		return progress;
+		let result = currentValue + (value - currentValue) * progress;
+		return [progress, result];
 	}
 
 	runBasic(time, key, currentValue, value) {
 		//진행률 반환후
-		let progress = this.getProgress(time);
+		let [progress, result] = this.getProgress(time, currentValue, value);
 		progress < 1
 			? requestAnimationFrame((time) => this.runBasic(time, key, currentValue, value))
 			: this.callback && this.callback();
 
 		//반환된 결과값으로 opcacity, scroll외에 모든 px요청값 적용
-		let result = currentValue + (value - currentValue) * progress;
 		if (key === 'opacity') this.selector.style[key] = result;
 		else if (key === 'scroll') this.selector.scroll(0, result);
 		else this.selector.style[key] = result + 'px';
@@ -69,13 +69,12 @@ class Anime {
 
 	runPercent(time, key, currentValue, value) {
 		//진행률 반환후
-		let progress = this.getProgress(time);
+		let [progress, result] = this.getProgress(time, currentValue, value);
 		progress < 1
 			? requestAnimationFrame((time) => this.runPercent(time, key, currentValue, value))
 			: this.callback && this.callback();
 
 		//반환된 결과값으로 오직 percent요청값 적용
-		let result = currentValue + (value - currentValue) * progress;
 		this.selector.style[key] = result + '%';
 	}
 }
