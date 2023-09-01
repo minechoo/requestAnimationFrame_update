@@ -66,6 +66,7 @@ class Anime {
 		this.duration = duration;
 		this.callback = callback;
 		this.startTime = performance.now();
+		this.isString - null;
 		//props객체어서 key, value값을 배열로 뽑고 인스턴스 객체로 넘긴다음
 		//인스턴스 생성시 내부적으로 해당 배열의 값들을 setValue메서드를 반복호출하면서 인수로 전달
 		this.keys.forEach((key, idx) => this.setValue(key, this.values[idx]));
@@ -74,7 +75,7 @@ class Anime {
 	setValue(key, value) {
 		console.log(key);
 		let currentValue = null;
-		const isString = typeof value;
+		this.isString = typeof value;
 		//일반적인 속성명일때 currentValue값 처리
 		currentValue = parseFloat(getComputedStyle(this.selector)[key]);
 		//속성명이 scroll일때 currentValue값 처리
@@ -82,7 +83,7 @@ class Anime {
 			? (currentValue = selector.scrollY)
 			: (currentValue = parseFloat(getComputedStyle(this.selector)[key])); //scroll은 윈도우 객체라 컴퓨티드스타일 못가져옴
 
-		if (isString === 'string') {
+		if (this.isString === 'string') {
 			const parentW = parseInt(getComputedStyle(this.selector.parentElement).width);
 			const parentH = parseInt(getComputedStyle(this.selector.parentElement).height);
 
@@ -111,20 +112,21 @@ class Anime {
 	}
 
 	run(time, key, currentValue, value) {
-		console.log('time', time, 'key', key, 'currentValue', currentValue, 'value', value);
-		// 	let timelast = time - this.startTime;
-		// 	let progress = timelast / this.option.duration;
+		//console.log('time', time, 'key', key, 'currentValue', currentValue, 'value', value);
+		let timelast = time - this.startTime;
+		let progress = timelast / this.duration;
 
-		// 	progress < 0 && (progress = 0);
-		// 	progress > 1 && (progress = 1);
+		progress < 0 && (progress = 0);
+		progress > 1 && (progress = 1);
 
-		// 	progress < 1 ? requestAnimationFrame((time) => this.run(time)) : this.option.callback && this.option.callback();
+		progress < 1
+			? requestAnimationFrame((time) => this.run(time, key, currentValue, value))
+			: this.callback && this.callback();
 
-		// 	let result = this.currentValue + (this.option.value - this.currentValue) * progress;
-
-		// 	if (this.isString === 'string') this.selector.style[this.option.prop] = result + '%';
-		// 	else if (this.option.prop === 'opacity') this.selector.style[this.option.prop] = result;
-		// 	else if (this.option.prop === 'scroll') this.selector.scroll(0, result);
-		// 	else this.selector.style[this.option.prop] = result + 'px';
+		let result = currentValue + (value - currentValue) * progress;
+		if (this.isString) this.selector.style[key] = result + '%';
+		else if (key === 'opacity') this.selector.style[key] = result;
+		else if (key === 'scroll') this.selector.scroll(0, result);
+		else this.selector.style[key] = result + 'px';
 	}
 }
