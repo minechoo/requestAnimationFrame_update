@@ -1,12 +1,16 @@
 class Anime {
-	constructor(selector, props, duration, callback) {
+	#defOpt = { duration: 500, callback: null, easeType: 'linear' };
+	constructor(selector, props, opt) {
 		this.selector = selector;
+		this.defOpt = { ...this.#defOpt, ...opt };
 		this.keys = Object.keys(props);
 		this.values = Object.values(props);
-		this.duration = duration;
-		this.callback = callback;
+		this.duration = this.defOpt.duration;
+		this.callback = this.defOpt.callback;
+		this.easeType = this.defOpt.easeType;
 		this.startTime = performance.now();
 		this.isString = null;
+		this.easingProgress = null;
 		//인스턴스 복사시 props의 갯수만큼 반복을 돌면서 속성종류에 따라 value값을 보정해주는 getValue에 반복전달
 		this.keys.forEach((key, idx) => this.getValue(key, this.values[idx]));
 	}
@@ -50,11 +54,31 @@ class Anime {
 
 	//run메서드 안쪽에서 전달된 currentValue,value값을 가지고 속성별로 진행률과 진행률이 적용된 result값을 반환
 	getProgress(time, currentValue, value) {
+		const easingPresets = {
+			linear: [0, 0, 1, 1],
+			ease1: [0.4, -0.61, 0.54, 1.61],
+			ease2: [0, 1.82, 0.94, -0.73],
+		};
+
 		let timelast = time - this.startTime;
 		let progress = timelast / this.duration;
+
+		Object.keys(easingPresets).map((key) => {
+			//easingPresets[key] : linear, ease1, ease2에 등록되어 있는 각각의 배열
+			//옵션으로 전달한 easeType, 내부적으로 반복도는  key값이 동잃 항목에 대한 배열에 값을 BezierEasing에 전달
+			//다시 매칭되는 배열값을 다시 순번에 맞게 뽑아서 BeizeEading에 각각 전달
+			if (this.easeType === key)
+				this.easingProgress = BezierEasing(
+					easingPresets[key][0],
+					easingPresets[key][1],
+					easingPresets[key][2],
+					easingPresets[key][3]
+				)(progress);
+		});
+
 		progress < 0 && (progress = 0);
 		progress > 1 && (progress = 1);
-		let result = currentValue + (value - currentValue) * progress;
+		let result = currentValue + (value - currentValue) * this.easingProgress;
 		return [progress, result];
 	}
 
