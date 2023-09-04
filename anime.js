@@ -7,10 +7,12 @@ class Anime {
 		this.callback = callback;
 		this.startTime = performance.now();
 		this.isString = null;
-		this.keys.forEach((key, idx) => this.setValue(key, this.values[idx]));
+		//인스턴스 복사시 props의 갯수만큼 반복을 돌면서 속성종류에 따라 value값을 보정해주는 getValue에 반복전달
+		this.keys.forEach((key, idx) => this.getValue(key, this.values[idx]));
 	}
 
-	setValue(key, value) {
+	//반복돌면서 전달되는 key, value값을 활용에 속성에 맞게 값을 가공해서 run메서드에 보내줌
+	getValue(key, value) {
 		let currentValue = null;
 		this.isString = typeof value === 'string';
 		currentValue = parseFloat(getComputedStyle(this.selector)[key]);
@@ -28,12 +30,25 @@ class Anime {
 			for (let cond of x) key === cond && (currentValue = (currentValue / parentW) * 100);
 			for (let cond of y) key === cond && (currentValue = (currentValue / parentH) * 100);
 			const percentValue = parseFloat(value);
-			percentValue !== currentValue && requestAnimationFrame((time) => this.run(time, key, currentValue, value, true));
+			percentValue !== currentValue &&
+				requestAnimationFrame((time) => this.run(time, key, currentValue, percentValue, true));
 		} else {
 			value !== currentValue && requestAnimationFrame((time) => this.run(time, key, currentValue, value, false));
 		}
 	}
 
+	//getValue로 전달된 값을 requestAnimationFrame으로부터 전달받아서 내부의 getProgress메서드에 전달
+	run(time, key, currentValue, value, isPercent) {
+		let [progress, result] = this.getProgress(time, currentValue, value);
+		//result값을 활용해서 실제적으로 DOM에 세팅
+		this.setValue(key, result, isPercent);
+		//progress값을 활용해서 반복유무를 결정
+		progress < 1
+			? requestAnimationFrame((time) => this.run(time, key, currentValue, value, isPercent ? true : false))
+			: this.callback && this.callback();
+	}
+
+	//run메서드 안쪽에서 전달된 currentValue,value값을 가지고 속성별로 진행률과 진행률이 적용된 result값을 반환
 	getProgress(time, currentValue, value) {
 		let timelast = time - this.startTime;
 		let progress = timelast / this.duration;
@@ -43,16 +58,8 @@ class Anime {
 		return [progress, result];
 	}
 
-	run(time, key, currentValue, value, isPercent) {
-		let [progress, result] = this.getProgress(time, currentValue, value);
-		//진행률이 1에 도달하지 않으면 계속 반복처리
-		progress < 1
-			? //진행률이 1에 도달하지 않은상태에서 isPercent가 true면 퍼센트 로직으로 run반복호출 , 그렇지 않으면 일반로직으로 run 반복호출
-			  requestAnimationFrame((time) =>
-					isPercent ? this.run(time, key, currentValue, value, true) : this.run(time, key, currentValue, value, false)
-			  )
-			: //1에 도달하면 반복을 멈추고 콜백이 있을떄 콜백함수 실행
-			  this.callback && this.callback();
+	//전달된 result값으로 실제적으로 돔의 변화 세팅
+	setValue(key, result, isPercent) {
 		if (isPercent) this.selector.style[key] = result + '%';
 		else if (key === 'opacity') this.selector.style[key] = result;
 		else if (key === 'scroll') this.selector.scroll(0, result);
